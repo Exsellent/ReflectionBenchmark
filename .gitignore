@@ -22,3 +22,12 @@ dependency-reduced-pom.xml
 ### log files ###
 *.log
 hs_err_pid*
+
+# Игнорирование временных файлов
+ *~
+ *.bak
+ *.tmp
+ *.swp
+ *.DS_Store
+ Thumbs.db
+  out/

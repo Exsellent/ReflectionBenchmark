@@ -1,0 +1,6 @@
+Benchmark                                Mode       Cnt   Score      Error      Units     
+=====================================================================================
+directAccess                             avgt       1     0,620      0,000      ns/op     
+lambdaMetafactoryAccess                  avgt       1     0,907      0,000      ns/op     
+methodHandleAccess                       avgt       1     5,108      0,000      ns/op     
+reflectionAccess                         avgt       1     7,098      0,000      ns/op     
