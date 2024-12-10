@@ -1,137 +1,193 @@
-# Шаблон Java-проекта для домашних заданий
+# **Проект 5: Измерение производительности**
 
-Шаблон для домашних заданий [Академии Бэкенда 2024][course-url].
+Проект направлен на изучение и сравнение производительности различных методов вызова
+через **Java Reflection API** и альтернативных подходов.
 
-Цель данного репозитория – познакомить вас с процессом разработки приложений на
-Java с использованием наиболее распространенных практик, инструментов и
-библиотек.
+---
 
-## Структура проекта
+## **Цель проекта**
 
-Это типовой Java-проект, который собирается с помощью инструмента автоматической
-сборки проектов [Apache Maven](https://maven.apache.org/).
+Реализовать и провести бенчмарк-тесты для **четырёх способов вызова метода**:
 
-Проект состоит из следующих директорий и файлов:
+1. **Прямой доступ** к методу.
+2. Использование **`java.lang.reflect.Method`**.
+3. Использование **`java.lang.invoke.MethodHandles`**.
+4. Использование **`java.lang.invoke.LambdaMetafactory`**.
 
-- [pom.xml](./pom.xml) – дескриптор сборки, используемый maven, или Project
-  Object Model. В нем описаны зависимости проекта и шаги по его сборке
-- [src/](./src) – директория, которая содержит исходный код приложения и его
-  тесты:
-  - [src/main/](./src/main) – здесь находится код вашего приложения
-  - [src/test/](./src/test) – здесь находятся тесты вашего приложения
-- [mvnw](./mvnw) и [mvnw.cmd](./mvnw.cmd) – скрипты maven wrapper для Unix и
-  Windows, которые позволяют запускать команды maven без локальной установки
-- [checkstyle.xml](checkstyle.xml),
-  [checkstyle-suppression.xml](checkstyle-suppression.xml), [pmd.xml](pmd.xml) и
-  [spotbugs-excludes.xml](spotbugs-excludes.xml) – в проекте используются
-  [линтеры](https://en.wikipedia.org/wiki/Lint_%28software%29) для контроля
-  качества кода. Указанные файлы содержат правила для используемых линтеров
-- [.mvn/](./.mvn) – служебная директория maven, содержащая конфигурационные
-  параметры сборщика
-- [lombok.config](lombok.config) – конфигурационный файл
-  [Lombok](https://projectlombok.org/), библиотеки помогающей избежать рутинного
-  написания шаблонного кода
-- [.editorconfig](.editorconfig) – файл с описанием настроек форматирования кода
-- [.github/workflows/build.yml](.github/workflows/build.yml) – файл с описанием
-  шагов сборки проекта в среде Github
-- [.gitattributes](.gitattributes), [.gitignore](.gitignore) – служебные файлы
-  для git, с описанием того, как обрабатывать различные файлы, и какие из них
-  игнорировать
+---
 
-## Начало работы
+## **Функциональные требования**
 
-Подробнее о том, как приступить к разработке, описано в разделах
-[курса][course-url] `1.8 Настройка IDE`, `1.9 Работа с Git` и
-`1.10 Настройка SSH`.
+1. Реализовать **бенчмарк-тест** для каждого варианта метода.
+2. Использовать **профильный фреймворк** для замера производительности:
+    - Java: **JMH** (Java Microbenchmark Harness).
+3. Провести замеры, получить финальную таблицу результатов.
 
-Для того чтобы собрать проект, и проверить, что все работает корректно, можно
-запустить из модального окна IDEA
-[Run Anything](https://www.jetbrains.com/help/idea/running-anything.html)
-команду:
+---
 
-```shell
+## **Нефункциональные требования**
+
+1. **Опубликовать финальную таблицу результатов запуска тестов**.
+2. Минимизировать фоновую нагрузку на компьютер при проведении замеров.
+3. Время выполнения тестов должно быть увеличено для получения корректных данных (порядка
+нескольких минут).
+
+---
+
+## **Структура проекта**
+
+Проект организован с использованием **Apache Maven** и включает следующие
+ключевые компоненты:
+
+```
+.
+├── pom.xml                              # Конфигурация Maven и зависимости
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── backend/
+│   │   │       ├── academy/
+│   │   │       │   ├── Main.java        # Точка входа
+│   │   │       │   └── PerformanceMeasurement/
+│   │   │       │       ├── benchmark/
+│   │   │       │       │   ├── ReflectionBenchmark.java   # Бенчмарк-тесты
+│   │   │       │       │   └── BenchmarkResultsCollector.java # Сбор результатов
+│   │   │       │       └── model/
+│   │   │       │           └── Student.java   # Тестируемый класс
+│   ├── test/                                # Тесты для проверки корректности
+│
+├── checkstyle.xml                           # Конфигурация Checkstyle
+├── pmd.xml                                  # Конфигурация PMD
+└── benchmark_results.txt                    # Финальные результаты замеров
+```
+
+---
+
+## **Тестируемый класс**
+
+Пример целевого класса:
+
+```java
+public record Student(String name, String surname) {}
+```
+
+---
+
+## **Бенчмарк-тесты**
+
+Тесты измеряют производительность четырёх методов вызова:
+
+```java
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+public class ReflectionBenchmark {
+    private Student student;
+    private Method method;
+
+    @Setup
+    public void setup() throws NoSuchMethodException {
+        student = new Student("Alexander", "Biryukov");
+        method = Student.class.getDeclaredMethod("name");
+        method.setAccessible(true);
+    }
+
+    @Benchmark
+    public void directAccess(Blackhole bh) {
+        bh.consume(student.name());
+    }
+
+    @Benchmark
+    public void reflectionAccess(Blackhole bh) throws Exception {
+        bh.consume(method.invoke(student));
+    }
+}
+```
+
+---
+
+## **Запуск и сборка проекта**
+
+Для запуска и тестирования проекта требуется **Java 22** и **Maven 3.8.8+**.
+
+### **1. Сборка проекта**
+
+Для сборки и проверки корректности выполнения:
+
+```bash
 mvn clean verify
 ```
 
-Альтернативно можно в терминале из корня проекта выполнить следующие команды.
+### **2. Запуск бенчмарк-тестов**
 
-Для Unix (Linux, macOS, Cygwin, WSL):
+Запуск тестов с помощью JMH:
 
-```shell
-./mvnw clean verify
+```bash
+mvn exec:java -Dexec.mainClass="backend.academy.PerformanceMeasurement.benchmark.ReflectionBenchmark"
 ```
 
-Для Windows:
+### **3. Сбор результатов**
 
-```shell
-mvnw.cmd clean verify
+Для сборки и сохранения таблицы с результатами:
+
+```bash
+mvn exec:java -Dexec.mainClass="backend.academy.PerformanceMeasurement.benchmark.BenchmarkResultsCollector"
 ```
 
-Для окончания сборки потребуется подождать какое-то время, пока maven скачает
-все необходимые зависимости, скомпилирует проект и прогонит базовый набор
-тестов.
+Результаты будут сохранены в файл **`benchmark_results.txt`**.
 
-Если вы в процессе сборки получили ошибку:
+---
 
-```shell
-Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion failed with message:
-JDK version must be at least 22
+## **Пример финальной таблицы результатов**
+
+```
+Benchmark                                Mode       Cnt   Score      Error      Units     
+=====================================================================================
+directAccess                             avgt       1     0.620      0.000      ns/op     
+lambdaMetafactoryAccess                  avgt       1     0.907      0.000      ns/op     
+methodHandleAccess                       avgt       1     5.108      0.000      ns/op     
+reflectionAccess                         avgt       1     7.098      0.000      ns/op     
 ```
 
-Значит, версия вашего JDK ниже 22.
+---
 
-Если же получили ошибку:
+## **Команды для анализа и тестирования**
 
-```shell
-Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion failed with message:
-Maven version should, at least, be 3.8.8
-```
+1. **Компиляция проекта:**
+   ```bash
+   mvn compile
+   ```
 
-Значит, у вас используется версия maven ниже 3.8.8. Такого не должно произойти,
-если вы запускаете сборку из IDEA или через `mvnw`-скрипты.
+2. **Запуск тестов:**
+   ```bash
+   mvn test
+   ```
 
-Далее будут перечислены другие полезные команды maven.
+3. **Запуск линтеров:**
+   ```bash
+   mvn checkstyle:check pmd:check spotbugs:check
+   ```
 
-Запуск только компиляции основных классов:
+4. **Вывод дерева зависимостей:**
+   ```bash
+   mvn dependency:tree
+   ```
 
-```shell
-mvn compile
-```
+---
 
-Запуск тестов:
+## **Полезные ресурсы**
 
-```shell
-mvn test
-```
+- [JMH Samples](https://github.com/openjdk/jmh/tree/master/jmh-samples)
+- [Java Reflection](https://blogs.oracle.com/javamagazine/post/java-reflection-introduction)
+- [Документация по Maven](https://maven.apache.org/guides/index.html)
+- [Java 22 API](https://docs.oracle.com/en/java/javase/22/docs/api/index.html)
 
-Запуск линтеров:
+---
 
-```shell
-mvn checkstyle:check modernizer:modernizer spotbugs:check pmd:check pmd:cpd-check
-```
+## **Заключение**
 
-Вывод дерева зависимостей проекта (полезно при отладке транзитивных
-зависимостей):
+В проекте реализованы и протестированы четыре различных способа вызова методов в Java
+с использованием JMH. Результаты замеров производительности позволяют оценить разницу
+в скорости и выбрать оптимальный подход для решения задач в реальных проектах.
 
-```shell
-mvn dependency:tree
-```
-
-Вывод вспомогательной информации о любом плагине (вместо `compiler` можно
-подставить интересующий вас плагин):
-
-```shell
-mvn help:describe -Dplugin=compiler
-```
-
-## Дополнительные материалы
-
-- Документация по maven: https://maven.apache.org/guides/index.html
-- Поиск зависимостей и их версий: https://central.sonatype.com/search
-- Документация по процессу автоматизированной сборки в среде github:
-  https://docs.github.com/en/actions
-- Документация по git: https://git-scm.com/doc
-- Javadoc для Java 22:
-  https://docs.oracle.com/en/java/javase/22/docs/api/index.html
-
-[course-url]: https://edu.tinkoff.ru/all-activities/courses/870efa9d-7067-4713-97ae-7db256b73eab
+---
