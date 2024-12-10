@@ -5,9 +5,6 @@ import lombok.experimental.UtilityClass;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 
-/**
- * Main class for executing JMH benchmarks.
- */
 @UtilityClass
 public class Main {
 
