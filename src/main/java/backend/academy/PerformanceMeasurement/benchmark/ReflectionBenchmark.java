@@ -20,10 +20,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
-/**
- * A benchmark class to compare various methods of accessing class fields.
- */
-@BenchmarkMode(Mode.AverageTime) @OutputTimeUnit(TimeUnit.NANOSECONDS) @State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
 public class ReflectionBenchmark {
 
     private static final String STUDENT_FIRST_NAME = "Alexander";
@@ -42,79 +41,49 @@ public class ReflectionBenchmark {
     private MethodHandle methodHandle;
     private Function<Student, String> lambda;
 
-    /**
-     * Setup method for initializing the student object and reflection tools.
-     *
-     * @throws NoSuchMethodException if the method cannot be found
-     * @throws Throwable             for method handle or lambda factory errors
-     */
-    @Setup public void setup() throws NoSuchMethodException, Throwable {
+    @Setup
+    public void setup() throws NoSuchMethodException, Throwable {
         student = new Student(STUDENT_FIRST_NAME, STUDENT_LAST_NAME);
 
+        // Reflection setup
         method = Student.class.getDeclaredMethod(METHOD_NAME);
         method.setAccessible(true);
 
-        methodHandle =
-            MethodHandles.lookup().findVirtual(Student.class, METHOD_NAME, MethodType.methodType(String.class));
+        methodHandle = MethodHandles.lookup().findVirtual(Student.class, METHOD_NAME,
+                MethodType.methodType(String.class));
 
-        CallSite callSite =
-            LambdaMetafactory.metafactory(MethodHandles.lookup(), "apply",
-                MethodType.methodType(Function.class),
-                MethodType.methodType(Object.class, Object.class), methodHandle,
+        CallSite callSite = LambdaMetafactory.metafactory(MethodHandles.lookup(), "apply",
+                MethodType.methodType(Function.class), MethodType.methodType(Object.class, Object.class), methodHandle,
                 MethodType.methodType(String.class, Student.class));
         lambda = (Function<Student, String>) callSite.getTarget().invokeExact();
     }
 
-    /**
-     * Direct access benchmark.
-     *
-     * @param bh the Blackhole to consume results
-     */
-    @Benchmark public void directAccess(Blackhole bh) {
-        String name = student.name();
-        bh.consume(name);
+    @Benchmark
+    public void directAccess(Blackhole bh) {
+        bh.consume(student.name());
     }
 
-    /**
-     * Reflection access benchmark.
-     *
-     * @param bh the Blackhole to consume results
-     * @throws Exception if method invocation fails
-     */
-    @Benchmark public void reflectionAccess(Blackhole bh) throws Exception {
+    @Benchmark
+    public void reflectionAccess(Blackhole bh) throws Exception {
         bh.consume(method.invoke(student));
     }
 
-    /**
-     * MethodHandle access benchmark.
-     *
-     * @param bh the Blackhole to consume results
-     * @throws Throwable for method handle errors
-     */
-    @Benchmark public void methodHandleAccess(Blackhole bh) throws Throwable {
+    @Benchmark
+    public void methodHandleAccess(Blackhole bh) throws Throwable {
         bh.consume(methodHandle.invoke(student));
     }
 
-    /**
-     * LambdaMetafactory access benchmark.
-     *
-     * @param bh the Blackhole to consume results
-     */
-    @Benchmark public void lambdaMetafactoryAccess(Blackhole bh) {
+    @Benchmark
+    public void lambdaMetafactoryAccess(Blackhole bh) {
         bh.consume(lambda.apply(student));
     }
 
-    /**
-     * Provides the configuration for JMH benchmarks.
-     *
-     * @return the Options for running benchmarks
-     */
     public static Options getBenchmarkOptions() {
         return new OptionsBuilder().include(ReflectionBenchmark.class.getSimpleName()).shouldFailOnError(true)
-            .shouldDoGC(true).mode(Mode.AverageTime).timeUnit(TimeUnit.NANOSECONDS).forks(FORKS)
-            .warmupForks(WARMUP_FORKS).warmupIterations(WARMUP_ITERATIONS)
-            .warmupTime(TimeValue.seconds(WARMUP_TIME_SECONDS)).measurementIterations(MEASUREMENT_ITERATIONS)
-            .measurementTime(TimeValue.seconds(MEASUREMENT_TIME_SECONDS)).build();
+                .shouldDoGC(true).mode(Mode.AverageTime).timeUnit(TimeUnit.NANOSECONDS).forks(FORKS)
+                .warmupForks(WARMUP_FORKS).warmupIterations(WARMUP_ITERATIONS)
+                .warmupTime(TimeValue.seconds(WARMUP_TIME_SECONDS)).measurementIterations(MEASUREMENT_ITERATIONS)
+                .measurementTime(TimeValue.seconds(MEASUREMENT_TIME_SECONDS)).build();
     }
 
     public record Student(String name, String surname) {

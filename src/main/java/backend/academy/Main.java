@@ -8,15 +8,6 @@ import org.openjdk.jmh.runner.RunnerException;
 @UtilityClass
 public class Main {
 
-    /**
-     * The main method for executing benchmarks.
-     *
-     * @param args
-     *            command-line arguments
-     *
-     * @throws RunnerException
-     *             if the benchmark fails to execute
-     */
     public static void main(String[] args) throws RunnerException {
         new Runner(ReflectionBenchmark.getBenchmarkOptions()).run();
     }

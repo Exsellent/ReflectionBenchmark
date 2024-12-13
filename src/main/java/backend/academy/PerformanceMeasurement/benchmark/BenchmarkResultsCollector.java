@@ -8,9 +8,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Utility class to collect and display benchmark results.
- */
 public final class BenchmarkResultsCollector {
 
     private static final Logger LOG = LogManager.getLogger(BenchmarkResultsCollector.class);
@@ -38,12 +35,8 @@ public final class BenchmarkResultsCollector {
         throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    /**
-     * Main method to run the benchmark results collection.
-     *
-     * @param args Command-line arguments
-     */
-    @SuppressWarnings("UncommentedMain") public static void main(String[] args) {
+    @SuppressWarnings("UncommentedMain")
+    public static void main(String[] args) {
         List<BenchmarkResult> results = new ArrayList<>();
         results.add(new BenchmarkResult("directAccess", MODE_AVGT, CNT, SCORE_DIRECT_ACCESS, 0.0, UNITS_NS_OP));
         results.add(new BenchmarkResult("lambdaMetafactoryAccess", MODE_AVGT, CNT, SCORE_LAMBDA, 0.0, UNITS_NS_OP));
@@ -54,44 +47,29 @@ public final class BenchmarkResultsCollector {
         saveTableToFile(results, "benchmark_results.txt");
     }
 
-    /**
-     * Creates a formatted table and logs it.
-     *
-     * @param results the list of benchmark results
-     */
     public static void createTable(List<BenchmarkResult> results) {
         StringBuilder table = new StringBuilder();
-        table.append(
-            String.format(FORMAT_HEADER, COLUMN_BENCHMARK, COLUMN_MODE, COLUMN_COUNT, COLUMN_SCORE, COLUMN_ERROR,
-                COLUMN_UNITS));
+        table.append(String.format(FORMAT_HEADER, COLUMN_BENCHMARK, COLUMN_MODE, COLUMN_COUNT, COLUMN_SCORE,
+                COLUMN_ERROR, COLUMN_UNITS));
         table.append(SEPARATOR).append("\n");
 
         for (BenchmarkResult result : results) {
-            table.append(
-                String.format(FORMAT_ROW, result.getBenchmark(), result.getMode(), result.getCount(), result.getScore(),
-                    result.getError(), result.getUnits()));
+            table.append(String.format(FORMAT_ROW, result.getBenchmark(), result.getMode(), result.getCount(),
+                    result.getScore(), result.getError(), result.getUnits()));
         }
 
         LOG.info("\n{}", table);
     }
 
-    /**
-     * Saves the benchmark results table to a file.
-     *
-     * @param results  the list of benchmark results
-     * @param fileName the name of the output file
-     */
     public static void saveTableToFile(List<BenchmarkResult> results, String fileName) {
         StringBuilder table = new StringBuilder();
-        table.append(
-            String.format(FORMAT_HEADER, COLUMN_BENCHMARK, COLUMN_MODE, COLUMN_COUNT, COLUMN_SCORE, COLUMN_ERROR,
-                COLUMN_UNITS));
+        table.append(String.format(FORMAT_HEADER, COLUMN_BENCHMARK, COLUMN_MODE, COLUMN_COUNT, COLUMN_SCORE,
+                COLUMN_ERROR, COLUMN_UNITS));
         table.append(SEPARATOR).append("\n");
 
         for (BenchmarkResult result : results) {
-            table.append(
-                String.format(FORMAT_ROW, result.getBenchmark(), result.getMode(), result.getCount(), result.getScore(),
-                    result.getError(), result.getUnits()));
+            table.append(String.format(FORMAT_ROW, result.getBenchmark(), result.getMode(), result.getCount(),
+                    result.getScore(), result.getError(), result.getUnits()));
         }
 
         try (FileWriter writer = new FileWriter(fileName)) {
