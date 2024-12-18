@@ -24,10 +24,10 @@ dependency-reduced-pom.xml
 hs_err_pid*
 
 # Игнорирование временных файлов
- *~
- *.bak
- *.tmp
- *.swp
- *.DS_Store
- Thumbs.db
-  out/
+*~
+*.bak
+*.tmp
+*.swp
+*.DS_Store
+Thumbs.db
+out/
